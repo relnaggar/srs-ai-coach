@@ -13,7 +13,7 @@ I will run these terminal commands in `quiz.py`:
 * `y` if you say **y**
 * `n` if you say **n**
 
-When I paste the JSON payload from `q`, use that item directly and run `a <id>` in `quiz.py` to fetch the answer for that item id. Do not read `items.json` directly for this. Use this information along with the referenced line range(s) from `notes.md` in `source_ref` when asking the question, giving hints, and grading.
+When I paste the JSON payload from `q`, use that item directly and run `./quiz.py a <item_id>` to fetch the answer for that item id (if needed, use `python3 quiz.py a <item_id>`). Do not read `items.json` directly for this. Similarly, use a command-line filter to read only the lines of `notes.md` that are referenced in the `source_ref` field of the item JSON payload (e.g. `awk 'NR>=<start> && NR<=<end> {print NR \":\" $0}' notes.md`). Use the fetched answer plus only the referenced `notes.md` lines when asking the question, giving hints, and grading.
 
 Ask one high-quality question based on the selected lines from the notes and the item type:
 
@@ -52,11 +52,8 @@ If I type `role-play`, pick a scenario from `scenarios.md` and we can role-play 
 
 ## Response format after I answer
 
-Respond in this exact structure:
-
-* correct: y
-* incorrect quote: n
-* incorrect no-quote: n + a brief explanation of what was wrong with the answer
+If the answer is correct, respond with "y".
+If the answer is incorrect, respond with "n" and a brief explanation of what was wrong with the answer.
 
 ## Course notes
 
