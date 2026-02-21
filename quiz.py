@@ -4,6 +4,8 @@
 import json
 import random
 import subprocess
+import shlex
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -38,8 +40,8 @@ def collect_item_issues(item: Any, index: int) -> list[str]:
         issues.append(f"{location}: missing keys {missing}")
 
     item_id = item.get("id")
-    if not isinstance(item_id, str) or not item_id.strip():
-        issues.append(f"{location}: id must be a non-empty string")
+    if not is_non_negative_int(item_id):
+        issues.append(f"{location}: id must be a non-negative integer")
 
     item_type = item.get("type")
     if item_type not in VALID_TYPES:
@@ -72,16 +74,16 @@ def collect_item_issues(item: Any, index: int) -> list[str]:
 
 def collect_validation_issues(data: list[Any]) -> list[str]:
     issues: list[str] = []
-    seen_ids: set[str] = set()
-    duplicate_ids: set[str] = set()
+    seen_ids: set[int] = set()
+    duplicate_ids: set[int] = set()
 
     for idx, item in enumerate(data):
         issues.extend(collect_item_issues(item, idx))
         if not isinstance(item, dict):
             continue
 
-        item_id = item.get("id")
-        if isinstance(item_id, str) and item_id.strip():
+        item_id = item.get("id", -1)
+        if is_non_negative_int(item_id):
             if item_id in seen_ids:
                 duplicate_ids.add(item_id)
             seen_ids.add(item_id)
@@ -131,15 +133,31 @@ def copy_to_clipboard(text: str) -> None:
 
 
 def build_payload(item: dict[str, Any]) -> str:
-    # Use compact JSON to keep clipboard payload small
-    return json.dumps(item, ensure_ascii=False, separators=(",", ":"))
+    # Redact answer to avoid leaking it in chat payloads.
+    payload = dict(item)
+    payload.pop("answer", None)
+    # Use compact JSON to keep clipboard payload small.
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 
-def find_item_index(items: list[dict[str, Any]], item_id: str) -> int:
+def find_item_index(items: list[dict[str, Any]], item_id: int) -> int:
     for index, item in enumerate(items):
-        if str(item["id"]) == item_id:
+        if int(item["id"]) == item_id:
             return index
-    raise SystemExit(f"Current item id not found in items.json: {item_id}")
+    raise SystemExit(f"Item id not found in items.json: {item_id}")
+
+
+def parse_item_id(raw_value: str) -> int:
+    raw = raw_value.strip()
+    if not raw:
+        raise SystemExit("item_id must be a non-negative integer")
+    try:
+        value = int(raw, 10)
+    except ValueError as exc:
+        raise SystemExit("item_id must be a non-negative integer") from exc
+    if value < 0:
+        raise SystemExit("item_id must be a non-negative integer")
+    return value
 
 
 def decrement_due_counters(items: list[dict[str, Any]]) -> None:
@@ -173,25 +191,21 @@ def select_next_item(items: list[dict[str, Any]]) -> dict[str, Any]:
     )
 
 
-def cmd_question(items_path: Path) -> str:
+def cmd_question(items_path: Path) -> int:
     items = load_items(items_path)
     chosen = select_next_item(items)
-    item_id = str(chosen["id"])
+    item_id = int(chosen["id"])
     payload = build_payload(chosen)
+    print(payload)
     copy_to_clipboard(payload)
-
-    print(f"payload copied to clipboard for id: {item_id}")
-    print(f"type: {chosen['type']}")
-    print(f"status: {chosen['status']}")
-    print(f"streak: {chosen['streak']}")
-
+    print("copied to clipboard")
     return item_id
 
 
 def cmd_grade(
         items_path: Path,
-        current_item_id: str | None, is_correct: bool
-    ) -> str:
+        current_item_id: int | None, is_correct: bool
+    ) -> int:
     if current_item_id is None:
         raise SystemExit("No active item. Run 'question' first.")
 
@@ -299,22 +313,59 @@ def cmd_check(items_path: Path) -> None:
         print("Issues found: 0")
 
 
+def cmd_answer(items_path: Path, item_id: int) -> None:
+    items = load_items(items_path)
+    item_index = find_item_index(items, item_id)
+    item = items[item_index]
+    print(str(item["answer"]))
+
+
 def print_help() -> None:
     print("Commands:")
     print("  q      Select next item and copy to clipboard")
     print("  y      Mark active item correct, then auto-copy next item")
     print("  n      Mark active item incorrect, then auto-copy next item")
+    print("  a ID   Print answer for numeric item id")
     print("  reset  Reset all items to unseen and due now")
     print("  check  Validate items and print summary stats")
     print("  help   Show this help")
     print("  exit   Quit the application")
 
 
-def main() -> int:
+def run_single_command(command: str, args: list[str]) -> int:
+    if command in {"question", "q"}:
+        cmd_question(ITEMS_PATH)
+        return 0
+    if command in {"y", "n"}:
+        if len(args) != 1:
+            raise SystemExit(f"Usage: {command} <item_id>")
+        item_id = parse_item_id(args[0])
+        is_correct = command == "y"
+        cmd_grade(ITEMS_PATH, item_id, is_correct)
+        return 0
+    if command == "reset":
+        cmd_reset(ITEMS_PATH)
+        return 0
+    if command == "check":
+        cmd_check(ITEMS_PATH)
+        return 0
+    if command in {"answer", "a"}:
+        if len(args) != 1:
+            raise SystemExit("Usage: a <item_id>")
+        item_id = parse_item_id(args[0])
+        cmd_answer(ITEMS_PATH, item_id)
+        return 0
+    if command in {"help", "h", "?"}:
+        print_help()
+        return 0
+    raise SystemExit(f"Unknown command: {command}")
+
+
+def run_interactive() -> int:
     print("Quiz CLI (interactive)")
     print("Type 'help' for commands.")
 
-    current_item_id: str | None = None
+    current_item_id: int | None = None
     while True:
         try:
             raw = input("> ")
@@ -325,9 +376,19 @@ def main() -> int:
             print()
             return 0
 
-        command = raw.strip().lower()
-        if not command:
+        raw = raw.strip()
+        if not raw:
             continue
+        try:
+            parts = shlex.split(raw)
+        except ValueError as exc:
+            print(f"Invalid command syntax: {exc}")
+            continue
+        if not parts:
+            continue
+
+        command = parts[0].lower()
+        args = parts[1:]
 
         if command in {"question", "q"}:
             try:
@@ -355,6 +416,15 @@ def main() -> int:
                 cmd_check(ITEMS_PATH)
             except SystemExit as exc:
                 print(exc)
+        elif command in {"answer", "a"}:
+            if len(args) != 1:
+                print("Usage: a <item_id>")
+                continue
+            try:
+                item_id = parse_item_id(args[0])
+                cmd_answer(ITEMS_PATH, item_id)
+            except SystemExit as exc:
+                print(exc)
         elif command in {"help", "h", "?"}:
             print_help()
         elif command in {"exit", "quit"}:
@@ -362,6 +432,19 @@ def main() -> int:
         else:
             print(f"Unknown command: {command}")
             print("Type 'help' for available commands.")
+
+
+def main() -> int:
+    if len(sys.argv) > 1:
+        command = sys.argv[1].lower()
+        args = sys.argv[2:]
+        try:
+            return run_single_command(command, args)
+        except SystemExit as exc:
+            print(exc)
+            return 1
+
+    return run_interactive()
 
 
 if __name__ == "__main__":

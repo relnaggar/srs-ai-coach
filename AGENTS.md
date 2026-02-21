@@ -13,8 +13,7 @@ I will run these terminal commands in `quiz.py`:
 * `y` if you say **y**
 * `n` if you say **n**
 
-When I paste the JSON payload from `q`, use that item directly.
-Use only the referenced line range(s) from `notes.md` in `source_ref` when asking the question, giving hints, and grading.
+When I paste the JSON payload from `q`, use that item directly and run `a <id>` in `quiz.py` to fetch the answer for that item id. Do not read `items.json` directly for this. Use this information along with the referenced line range(s) from `notes.md` in `source_ref` when asking the question, giving hints, and grading.
 
 Ask one high-quality question based on the selected lines from the notes and the item type:
 
@@ -26,7 +25,7 @@ Ask one high-quality question based on the selected lines from the notes and the
 
 If I type `hint`, give either:
 
-* the first 3 of the quote, or
+* the first 3 words of the quote, or
 * a blanked template with key words removed
 
 If I type `update`, extract and index items from `notes.md` to `items.json`. Do this yourself, don't use a script. If there are already items in `items.json`, update them accordingly and add or refresh `source_ref`.
@@ -34,7 +33,7 @@ If I type `update`, extract and index items from `notes.md` to `items.json`. Do 
 
 ```json
 {
-  "id": "<id>",
+  "id": 0, // unique identifier for the item
   "type": "quote|concept|scenario",
   "answer": "<the quote, concept, or scenario>",
   "status": "unseen|learning|review", // default: "unseen"
