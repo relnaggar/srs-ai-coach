@@ -1,0 +1,104 @@
+# SRS AI Coach
+
+Simple spaced-repetition CLI for interacting with an AI coach. Extracts study items from `notes.md`, tracks progress in `items.json`, and prompts you to recall information in your AI chat. Designed for quick daily review sessions.
+
+## What This Project Does
+
+- `quiz.py` selects and schedules items from `items.json`.
+- The selected item payload is copied to your clipboard.
+- You paste that payload into your AI chat coach.
+- The AI asks one question, grades your answer, and you record result in the CLI (`y` or `n`).
+
+## Project Files
+
+- `quiz.py`: interactive CLI, scheduling logic, validation.
+- `items.json`: study items and spaced-repetition state.
+- `notes.md`: source material for extracted items.
+- `scenarios.md`: scenario list for role-play prompts.
+- `AGENTS.md`: instructions for the AI coach workflow.
+
+## Requirements
+
+- AI coding agent compatible with `AGENTS.md` instructions (tested with gpt-5.3-codex)
+- Python 3
+- macOS `pbcopy` (used to copy payloads to clipboard)
+
+## Run
+
+```bash
+./quiz.py
+```
+
+If needed:
+
+```bash
+python3 quiz.py
+```
+
+## Commands
+
+- `q`: select next item and copy compact JSON payload to clipboard
+- `y`: mark current item correct, then auto-select/copy next item
+- `n`: mark current item incorrect, then auto-select/copy next item
+- `check`: validate `items.json` and print stats
+- `reset`: reset all items to `unseen`, `streak=0`, `next_due=0`
+- `help`: show command help
+- `exit`: quit
+
+## AI Workflow
+
+1. Run `q` in `quiz.py`.
+2. Paste the copied JSON payload into chat.
+3. AI asks one question based on `type` + `source_ref`.
+4. You answer in chat.
+5. AI responds with one of:
+   - `correct: y`
+   - `incorrect quote: n`
+   - `incorrect no-quote: n` + short explanation
+6. Enter `y` or `n` in `quiz.py`.
+7. Repeat.
+
+See `AGENTS.md` for exact prompting, hint handling, and grading rules.
+
+## AI Chat Commands
+
+Use these directly in chat with your AI coach:
+
+- `hint`: get either the first 3 words of a quote, or a blanked template.
+- `update`: manually extract/index items from `notes.md` into `items.json`, refreshing `source_ref` values.
+- `role-play`: run an interactive scenario from `scenarios.md` where the AI plays the other person.
+
+## Item Schema (`items.json`)
+
+Each item must include:
+
+```json
+{
+  "id": "unique-id",
+  "type": "quote|concept|scenario",
+  "answer": "content to recall",
+  "status": "unseen|learning|review",
+  "streak": 0,
+  "next_due": 0,
+  "source_ref": "line-or-line-range-in-notes"
+}
+```
+
+## Scheduling Behavior
+
+- Item selection:
+  - Prefer items with `next_due == 0`.
+  - If none are due, pick a random `unseen` item.
+- Every grade (`y` or `n`) decrements positive `next_due` values for all items by 1.
+- Correct (`y`):
+  - `streak += 1`
+  - `status = learning` at streak 1, otherwise `review`
+  - add random interval to `next_due` based on streak:
+    - 1-2: `8-15`
+    - 3: `20-35`
+    - 4: `50-80`
+    - 5+: `120-200`
+- Incorrect (`n`):
+  - `streak = 0`
+  - `status = learning`
+  - add `3-6` to `next_due`
