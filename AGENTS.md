@@ -35,6 +35,7 @@ If I type `update`, extract and index items from `notes.md` to `items.json`. Do 
 {
   "id": 0, // unique identifier for the item
   "type": "quote|concept|scenario",
+  "topic": "<notes section label for this item>",
   "answer": "<the quote, concept, or scenario>",
   "status": "unseen|learning|review", // default: "unseen"
   "streak": 0, // number of consecutive correct answers

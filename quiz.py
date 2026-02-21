@@ -15,6 +15,7 @@ VALID_STATUSES = {"unseen", "learning", "review"}
 REQUIRED_ITEM_KEYS = {
     "id",
     "type",
+    "topic",
     "answer",
     "status",
     "streak",
@@ -46,6 +47,10 @@ def collect_item_issues(item: Any, index: int) -> list[str]:
     item_type = item.get("type")
     if item_type not in VALID_TYPES:
         issues.append(f"{location}: invalid type {item_type!r}")
+
+    topic = item.get("topic")
+    if not isinstance(topic, str) or not topic.strip():
+        issues.append(f"{location}: topic must be a non-empty string")
 
     status = item.get("status")
     if status not in VALID_STATUSES:

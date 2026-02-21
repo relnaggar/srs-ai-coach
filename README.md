@@ -69,22 +69,6 @@ Use these directly in chat with your AI coach:
 - `update`: manually extract/index items from `notes.md` into `items.json`, refreshing `source_ref` values.
 - `role-play`: run an interactive scenario from `scenarios.md` where the AI plays the other person.
 
-## Item Schema (`items.json`)
-
-Each item must include:
-
-```json
-{
-  "id": 0, // unique identifier for the item
-  "type": "quote|concept|scenario",
-  "answer": "content to recall",
-  "status": "unseen|learning|review",
-  "streak": 0, // number of consecutive correct answers
-  "next_due": 0, // number of questions until this item is due for review
-  "source_ref": "line-or-line-range-in-notes"
-}
-```
-
 ## Scheduling Behavior
 
 - Item selection:
