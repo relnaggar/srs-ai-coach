@@ -322,12 +322,13 @@ def cmd_check(items_path: Path) -> None:
         next_due = item.get("next_due", -1)
         if not is_non_negative_int(next_due):
             invalid_due += 1
-        elif next_due == 0:
-            due_now += 1
-        elif next_due <= 6:
-            due_soon += 1
-        else:
-            due_later += 1
+        elif status != "unseen":
+            if next_due == 0:
+                due_now += 1
+            elif next_due <= 6:
+                due_soon += 1
+            else:
+                due_later += 1
 
     print("Check Report")
     print(f"Total items: {len(data)}")
