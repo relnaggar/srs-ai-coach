@@ -1,5 +1,5 @@
 __pycache__/
 .claude/
 notes.md
-items.json
+*.json
 scenarios.md
