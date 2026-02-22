@@ -17,6 +17,23 @@ Simple spaced-repetition CLI for interacting with an AI coach. Extracts study it
 - `scenarios.md`: scenario list for roleplay prompts.
 - `AGENTS.md`: instructions for the AI coach workflow.
 
+## Item Schema
+
+Each entry in `items.json` must include:
+
+- `id`: unique non-negative integer
+- `type`: `quote|concept|scenario`
+- `topic`: notes section label
+- `answer`: canonical quote or ideal response
+- `status`: `unseen|learning|review`
+- `streak`: non-negative integer
+- `next_due`: non-negative integer
+- `source_ref`: line range(s) in `notes.md`
+
+Optional:
+
+- `question`: suggested question prompt for the AI tutor (AI still has final say on phrasing)
+
 ## Requirements
 
 - AI coding agent compatible with `AGENTS.md` instructions (tested with gpt-5.3-codex)
@@ -55,7 +72,7 @@ Non-interactive note:
 
 1. Run `q` in `quiz.py`.
 2. Paste the copied JSON payload into chat.
-3. AI asks one question based on `type` + `source_ref`.
+3. AI asks one question using `question` as a suggestion plus `type` + `source_ref` context.
 4. You answer in chat.
 5. AI responds with one of:
    - `correct: y`

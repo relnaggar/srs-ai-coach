@@ -21,6 +21,8 @@ Ask one high-quality question based on the the notes and the item type:
 * concept: ask a recall question that requires understanding of the concept
 * scenario: present the scenario and ask how I would respond
 
+If the item has a `question` field, treat it as the suggested prompt to start from. You still have final say on phrasing based on `type`, `answer`, and `source_ref`.
+
 ## Chat Commands
 
 If I type `hint`, give either:
@@ -51,6 +53,7 @@ By the end of this process, `items.json` should contain an array of items with t
 {
   "id": 0, // unique identifier for the item
   "type": "quote|concept|scenario",
+  "question": "<suggested question prompt for the AI tutor>", // optional
   "topic": "<notes section label for this item>",
   "answer": "<the quote or ideal response>",
   "status": "unseen|learning|review", // default: "unseen"

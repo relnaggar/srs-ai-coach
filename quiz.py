@@ -50,6 +50,14 @@ def collect_item_issues(item: Any, index: int) -> list[str]:
     if item_type not in VALID_TYPES:
         issues.append(f"{location}: invalid type {item_type!r}")
 
+    if "question" in item:
+        question = item.get("question")
+        if not isinstance(question, str) or not question.strip():
+            issues.append(
+                f"{location}: question must be a non-empty string "
+                "(suggested prompt for AI tutor) when provided"
+            )
+
     topic = item.get("topic")
     if not isinstance(topic, str) or not topic.strip():
         issues.append(f"{location}: topic must be a non-empty string")
