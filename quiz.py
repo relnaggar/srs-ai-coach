@@ -330,7 +330,7 @@ def print_help() -> None:
     print("  q      Select next item and copy to clipboard")
     print("  y      Mark active item correct, then auto-copy next item")
     print("  n      Mark active item incorrect, then auto-copy next item")
-    print("  a ID   Print answer for numeric item id")
+    print("  a [ID] Print answer for item id (or active item in interactive mode)")
     print("  reset  Reset all items to unseen and due now")
     print("  check  Validate items and print summary stats")
     print("  help   Show this help")
@@ -356,7 +356,7 @@ def run_single_command(command: str, args: list[str]) -> int:
         return 0
     if command in {"answer", "a"}:
         if len(args) != 1:
-            raise SystemExit("Usage: a <item_id>")
+            raise SystemExit("Usage: a <item_id> (non-interactive mode)")
         item_id = parse_item_id(args[0])
         cmd_answer(ITEMS_PATH, item_id)
         return 0
@@ -422,11 +422,17 @@ def run_interactive() -> int:
             except SystemExit as exc:
                 print(exc)
         elif command in {"answer", "a"}:
-            if len(args) != 1:
-                print("Usage: a <item_id>")
+            if len(args) > 1:
+                print("Usage: a [item_id]")
                 continue
             try:
-                item_id = parse_item_id(args[0])
+                if len(args) == 0:
+                    if current_item_id is None:
+                        print("No active item. Run 'q' first or use: a <item_id>")
+                        continue
+                    item_id = current_item_id
+                else:
+                    item_id = parse_item_id(args[0])
                 cmd_answer(ITEMS_PATH, item_id)
             except SystemExit as exc:
                 print(exc)

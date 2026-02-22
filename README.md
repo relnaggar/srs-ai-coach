@@ -40,11 +40,14 @@ python3 quiz.py
 - `q`: select next item and copy compact JSON payload to clipboard
 - `y`: mark current item correct, then auto-select/copy next item
 - `n`: mark current item incorrect, then auto-select/copy next item
-- `a <id>`: print answer for a given item ID
+- `a [id]`: print answer for an item ID; in interactive mode, if `id` is omitted it uses the current active item
 - `check`: validate `items.json` and print stats
 - `reset`: reset all items to `unseen`, `streak=0`, `next_due=0`
 - `help`: show command help
 - `exit`: quit
+
+Non-interactive note:
+- `python3 quiz.py a <id>` still requires an explicit `id`.
 
 ## AI Workflow
 
