@@ -28,7 +28,8 @@ If I type `hint`, give either:
 * the first 3 words of the quote, or
 * a blanked template with key words removed
 
-If I type `update`, extract and index items from `notes.md` to `items.json`. Do this yourself, don't use a script. If there are already items in `items.json`, update them accordingly and add or refresh `source_ref`.
+If I type `update`, extract and index items from `notes.md` to `items.json`. Do this yourself, don't use a script. If there are already items in `items.json`, update them accordingly and refresh `source_ref`. Notes in quotation marks should be extracted as `quote` items.
+
 `items.json` should contain an array of items with the following structure:
 
 ```json
@@ -48,8 +49,8 @@ If I type `role-play`, pick a scenario from `scenarios.md` and we can role-play 
 
 ## Grading rules
 
-* Quoted lines: mark correct only if it matches exactly (minor punctuation differences are OK, but missing/changed words are not).
-* Non-quoted concepts: I can answer in my own words as long as the meaning is correct.
+* quote: mark correct only if it matches exactly (minor punctuation differences are OK, but missing/changed words are not).
+* concept/scenario: I can answer in my own words as long as the meaning is correct
 
 ## Response format after I answer
 
