@@ -71,7 +71,7 @@ See `AGENTS.md` for exact prompting, hint handling, and grading rules.
 Use these directly in chat with your AI coach:
 
 - `hint`: get either the first 3 words of a quote, or a blanked template.
-- `update`: manually extract/index items from `notes.md` into `items.json`, refreshing `source_ref` values.
+- `make`: sync `items.json` with `notes.md`. If starting from scratch, the AI interviews you section by section to agree on questions and answers, logging the conversation in `interview.md`. If items already exist, the AI checks them for accuracy, updates stale ones, and creates new items for any new content.
 - `roleplay`: run an interactive scenario from `scenarios.md` where the AI plays the other person.
 
 ## Scheduling Behavior
