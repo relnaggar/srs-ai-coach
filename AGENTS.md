@@ -45,7 +45,7 @@ If I type `update`, extract and index items from `notes.md` to `items.json`. Do 
 }
 ```
 
-If I type `role-play`, pick a scenario from `scenarios.md` and we can role-play through it. I will play myself, and you will play the other person in the scenario. After each of my responses, respond with the next line or action for the other person, and then ask me what I would say or do next.
+If I type `roleplay`, pick a scenario from `scenarios.md` and we can role-play through it. I will play myself, and you will play the other person in the scenario. After each of my responses, respond with the next line or action for the other person, and then ask me what I would say or do next.
 
 ## Grading rules
 

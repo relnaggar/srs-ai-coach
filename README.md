@@ -14,7 +14,7 @@ Simple spaced-repetition CLI for interacting with an AI coach. Extracts study it
 - `quiz.py`: interactive CLI, scheduling logic, validation.
 - `items.json`: study items and spaced-repetition state.
 - `notes.md`: source material for extracted items.
-- `scenarios.md`: scenario list for role-play prompts.
+- `scenarios.md`: scenario list for roleplay prompts.
 - `AGENTS.md`: instructions for the AI coach workflow.
 
 ## Requirements
@@ -72,7 +72,7 @@ Use these directly in chat with your AI coach:
 
 - `hint`: get either the first 3 words of a quote, or a blanked template.
 - `update`: manually extract/index items from `notes.md` into `items.json`, refreshing `source_ref` values.
-- `role-play`: run an interactive scenario from `scenarios.md` where the AI plays the other person.
+- `roleplay`: run an interactive scenario from `scenarios.md` where the AI plays the other person.
 
 ## Scheduling Behavior
 
