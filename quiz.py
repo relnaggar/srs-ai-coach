@@ -208,11 +208,17 @@ def schedule_interval_for_correct(streak: int) -> int:
 
 
 def select_next_item(items: list[dict[str, Any]]) -> dict[str, Any]:
-    due_now = [item for item in items if int(item["next_due"]) == 0]
-    if due_now:
-        return random.choice(due_now)
+    due_reviews = [
+        item for item in items
+        if int(item["next_due"]) == 0 and str(item["status"]) in {"learning", "review"}
+    ]
+    if due_reviews:
+        return random.choice(due_reviews)
 
-    unseen = [item for item in items if str(item["status"]) == "unseen"]
+    unseen = [
+        item for item in items
+        if str(item["status"]) == "unseen"
+    ]
     if unseen:
         return random.choice(unseen)
 
