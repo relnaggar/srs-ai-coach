@@ -3,6 +3,7 @@
 
 import json
 import random
+import re
 import subprocess
 import shlex
 import sys
@@ -10,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 ITEMS_PATH = Path("items.json")
+NOTES_PATH = Path("notes.md")
 VALID_TYPES = {"quote", "concept", "scenario"}
 VALID_STATUSES = {"unseen", "learning", "review"}
 REQUIRED_ITEM_KEYS = {
@@ -163,6 +165,29 @@ def parse_item_id(raw_value: str) -> int:
     if value < 0:
         raise SystemExit("item_id must be a non-negative integer")
     return value
+
+
+def parse_source_ref_ranges(source_ref: str) -> list[tuple[int, int]]:
+    parts = [part.strip() for part in source_ref.split(",") if part.strip()]
+    if not parts:
+        raise SystemExit(f"Invalid source_ref: {source_ref!r}")
+
+    ranges: list[tuple[int, int]] = []
+    for part in parts:
+        match = re.fullmatch(r"(\d+)(?:\s*-\s*(\d+))?", part)
+        if match is None:
+            raise SystemExit(f"Invalid source_ref segment: {part!r}")
+
+        start = int(match.group(1))
+        end = int(match.group(2)) if match.group(2) else start
+        if start < 1 or end < 1:
+            raise SystemExit(f"source_ref line numbers must be >= 1: {part!r}")
+        if start > end:
+            raise SystemExit(
+                f"source_ref range start must be <= end: {part!r}"
+            )
+        ranges.append((start, end))
+    return ranges
 
 
 def decrement_due_counters(items: list[dict[str, Any]]) -> None:
@@ -325,12 +350,33 @@ def cmd_answer(items_path: Path, item_id: int) -> None:
     print(str(item["answer"]))
 
 
+def cmd_source(items_path: Path, notes_path: Path, item_id: int) -> None:
+    items = load_items(items_path)
+    item_index = find_item_index(items, item_id)
+    source_ref = str(items[item_index]["source_ref"]).strip()
+    ranges = parse_source_ref_ranges(source_ref)
+
+    if not notes_path.exists():
+        raise SystemExit(f"Missing notes file: {notes_path}")
+    lines = notes_path.read_text(encoding="utf-8").splitlines()
+
+    for start, end in ranges:
+        if end > len(lines):
+            raise SystemExit(
+                f"source_ref out of bounds for {notes_path}: "
+                f"{start}-{end} (file has {len(lines)} lines)"
+            )
+        for line_no in range(start, end + 1):
+            print(f"{line_no}:{lines[line_no - 1]}")
+
+
 def print_help() -> None:
     print("Commands:")
     print("  q      Select next item and copy to clipboard")
     print("  y      Mark active item correct, then auto-copy next item")
     print("  n      Mark active item incorrect, then auto-copy next item")
     print("  a [ID] Print answer for item id (or active item in interactive mode)")
+    print("  source [ID] Print source_ref lines from notes.md for item id")
     print("  reset  Reset all items to unseen and due now")
     print("  check  Validate items and print summary stats")
     print("  help   Show this help")
@@ -359,6 +405,12 @@ def run_single_command(command: str, args: list[str]) -> int:
             raise SystemExit("Usage: a <item_id> (non-interactive mode)")
         item_id = parse_item_id(args[0])
         cmd_answer(ITEMS_PATH, item_id)
+        return 0
+    if command == "source":
+        if len(args) != 1:
+            raise SystemExit("Usage: source <item_id> (non-interactive mode)")
+        item_id = parse_item_id(args[0])
+        cmd_source(ITEMS_PATH, NOTES_PATH, item_id)
         return 0
     if command in {"help", "h", "?"}:
         print_help()
@@ -434,6 +486,23 @@ def run_interactive() -> int:
                 else:
                     item_id = parse_item_id(args[0])
                 cmd_answer(ITEMS_PATH, item_id)
+            except SystemExit as exc:
+                print(exc)
+        elif command == "source":
+            if len(args) > 1:
+                print("Usage: source [item_id]")
+                continue
+            try:
+                if len(args) == 0:
+                    if current_item_id is None:
+                        print(
+                            "No active item. Run 'q' first or use: source <item_id>"
+                        )
+                        continue
+                    item_id = current_item_id
+                else:
+                    item_id = parse_item_id(args[0])
+                cmd_source(ITEMS_PATH, NOTES_PATH, item_id)
             except SystemExit as exc:
                 print(exc)
         elif command in {"help", "h", "?"}:

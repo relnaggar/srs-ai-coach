@@ -41,6 +41,7 @@ python3 quiz.py
 - `y`: mark current item correct, then auto-select/copy next item
 - `n`: mark current item incorrect, then auto-select/copy next item
 - `a [id]`: print answer for an item ID; in interactive mode, if `id` is omitted it uses the current active item
+- `source [id]`: print `source_ref` lines from `notes.md`; in interactive mode, if `id` is omitted it uses the current active item
 - `check`: validate `items.json` and print stats
 - `reset`: reset all items to `unseen`, `streak=0`, `next_due=0`
 - `help`: show command help
@@ -48,6 +49,7 @@ python3 quiz.py
 
 Non-interactive note:
 - `python3 quiz.py a <id>` still requires an explicit `id`.
+- `python3 quiz.py source <id>` requires an explicit `id`.
 
 ## AI Workflow
 
