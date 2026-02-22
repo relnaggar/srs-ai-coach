@@ -13,9 +13,9 @@ I will run these terminal commands in `quiz.py`:
 * `y` if you say **y**
 * `n` if you say **n**
 
-When I paste the JSON payload from `q`, use that item directly and run `./quiz.py a <item_id>` to fetch the answer for that item id (if needed, use `python3 quiz.py a <item_id>`). Do not read `items.json` directly for this. Similarly, use a command-line filter to read only the lines of `notes.md` that are referenced in the `source_ref` field of the item JSON payload (e.g. `awk 'NR>=<start> && NR<=<end> {print NR \":\" $0}' notes.md`). Use the fetched answer plus only the referenced `notes.md` lines when asking the question, giving hints, and grading.
+When I paste the JSON payload from `q`, use that item directly and run `./quiz.py a <item_id>` to fetch the answer for that item id (if needed, use `python3 quiz.py a <item_id>`). Do not read `items.json` directly for this. Similarly, use a command-line filter to read only the lines of `notes.md` that are referenced in the `source_ref` field of the item JSON payload (e.g. `awk 'NR>=<start> && NR<=<end> {print NR \":\" $0}' notes.md`). Use the fetched answer plus the referenced `notes.md` lines (and surrounding lines when necessary) when asking the question, giving hints, and grading.
 
-Ask one high-quality question based on the selected lines from the notes and the item type:
+Ask one high-quality question based on the the notes and the item type:
 
 * quote: give a contextual recall prompt and ask for the exact quote
 * concept: ask a recall question that requires understanding of the concept
