@@ -28,7 +28,7 @@ If I type `hint`, give either:
 * the first 3 words of the quote, or
 * a blanked template with key words removed
 
-If I type `update`, extract and index items from `notes.md` to `items.json`. Do this yourself, don't use a script. If there are already items in `items.json`, update them accordingly and refresh `source_ref`. Notes in quotation marks should be extracted as `quote` items.
+If I type `update`, extract and index items from `notes.md` to `items.json`. Do this yourself, don't use a script. If there are already items in `items.json`, update them accordingly and refresh `source_ref` to include all relevant lines that may help you ask the question, give a hint, or grade the answer. Notes in quotation marks should be extracted as `quote` items.
 
 `items.json` should contain an array of items with the following structure:
 
