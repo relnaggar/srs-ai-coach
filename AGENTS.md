@@ -35,7 +35,7 @@ If I type `roleplay`, pick a scenario from `scenarios.md` and we can role-play t
 ## Grading rules
 
 * "dn" (don't know) is always incorrect
-* quote: mark correct only if it matches exactly (minor punctuation differences are OK, but missing/changed words are not).
+* quote: mark correct only if it matches exactly (minor punctuation and spelling differences are OK, but missing/changed words are not).
 * concept/scenario: I can answer in my own words as long as the meaning is correct
 
 ## Response format after I answer
