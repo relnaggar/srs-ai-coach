@@ -1,12 +1,12 @@
 # SRS AI Coach
 
-Simple spaced-repetition CLI for interacting with an AI coach. Extracts study items from `notes.md`, tracks progress in `items.json`, and prompts you to recall information in your AI chat. Designed for quick daily review sessions.
+Simple spaced-repetition CLI for interacting with an AI coach. Extracts study items from `notes.md`, tracks progress in `items.json`, and prompts you to recall information. Designed for quick daily review sessions.
 
 ## What This Project Does
 
-- `quiz.py` selects the next item, prompts you to type your answer in the terminal, then copies the item+answer payload to your clipboard.
-- You paste that payload into your AI chat coach.
-- The AI asks the question and grades your answer in one response, then you record the result in the CLI (`y` or `n`).
+- `quiz.py` selects the next item, shows the question, and prompts you to recall the answer.
+- After you enter your answer, the correct answer is revealed so you can self-grade.
+- Enter `y` or `n` to record the result and move to the next item.
 
 ## Project Files
 
@@ -21,9 +21,9 @@ Simple spaced-repetition CLI for interacting with an AI coach. Extracts study it
 Each entry in `items.json` must include:
 
 - `id`: unique non-negative integer
-- `type`: `quote|concept|scenario`
-- `question`: question prompt for the AI tutor
 - `topic`: notes section label
+- `type`: `quote|concept|scenario`
+- `question`: question prompt
 - `answer`: canonical quote or ideal response
 - `status`: `unseen|learning|review`
 - `streak`: non-negative integer
@@ -31,9 +31,8 @@ Each entry in `items.json` must include:
 
 ## Requirements
 
-- AI coding agent compatible with `AGENTS.md` instructions (tested with gpt-5.3-codex)
+- AI coding agent compatible with `AGENTS.md` instructions (tested with Claude Sonnet 4.6)
 - Python 3
-- macOS `pbcopy` (used to copy payloads to clipboard)
 
 ## Run
 
@@ -49,9 +48,9 @@ python3 quiz.py
 
 ## Commands
 
-- `q`: select next item, prompt for your answer, copy item+answer payload to clipboard
-- `y`: mark current item correct, then auto-select/copy next item
-- `n`: mark current item incorrect, then auto-select/copy next item
+- `q`: select next item, prompt for your answer, then reveal the correct answer
+- `y`: mark current item correct, then auto-select next item
+- `n`: mark current item incorrect, then auto-select next item
 - `a [id]`: print answer for an item ID; in interactive mode, if `id` is omitted it uses the current active item
 - `check`: validate `items.json` and print stats
 - `reset`: reset all items to `unseen`, `streak=0`, `next_due=0`
@@ -61,23 +60,17 @@ python3 quiz.py
 Non-interactive note:
 - `python3 quiz.py a <id>` requires an explicit `id`.
 
-## AI Workflow
+## Workflow
 
-1. Run `q` in `quiz.py` — type your answer at the `answer>` prompt.
-2. Paste the copied JSON payload into chat.
-3. AI grades your `user_answer` against the `answer` field in one response.
-4. AI responds with `y` or `n` (+ explanation if incorrect).
-5. Enter `y` or `n` in `quiz.py`.
-6. Repeat.
-
-See `AGENTS.md` for exact prompting, hint handling, and grading rules.
+1. Run `q` — type your answer at the `answer>` prompt.
+2. The correct answer is revealed. Self-grade: enter `y` or `n`.
+3. Repeat.
 
 ## AI Chat Commands
 
 Use these directly in chat with your AI coach:
 
-- `hint`: get either the first 3 words of a quote, or a blanked template.
-- `make`: sync `items.json` with `notes.md`. If starting from scratch, the AI interviews you section by section to agree on questions and answers, logging the conversation in `interview.md`. If items already exist, the AI checks them for accuracy, updates stale ones, and creates new items for any new content.
+- `make`: sync `items.json` with `notes.md`. If starting from scratch, the AI interviews you section by section to agree on questions and answers. If items already exist, the AI checks them for accuracy, updates stale ones, and creates new items for any new content.
 - `roleplay`: run an interactive scenario from `scenarios.md` where the AI plays the other person.
 
 ## Scheduling Behavior

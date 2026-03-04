@@ -3,7 +3,6 @@
 
 import json
 import random
-import subprocess
 import shlex
 import sys
 from pathlib import Path
@@ -125,25 +124,6 @@ def save_items(path: Path, items: list[dict[str, Any]]) -> None:
         f.write("\n")
 
 
-def copy_to_clipboard(text: str) -> None:
-    try:
-        subprocess.run(["pbcopy"], input=text, text=True, check=True)
-    except FileNotFoundError as exc:
-        raise SystemExit(
-            "Clipboard error: 'pbcopy' was not found on this machine."
-        ) from exc
-    except subprocess.CalledProcessError as exc:
-        raise SystemExit(
-            f"Clipboard error: 'pbcopy' failed with exit code {exc.returncode}."
-        ) from exc
-
-
-def build_payload(item: dict[str, Any], user_answer: str) -> str:
-    payload = {k: v for k, v in item.items() if k != "source_ref"}
-    payload["user_answer"] = user_answer
-    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-
-
 def find_item_index(items: list[dict[str, Any]], item_id: int) -> int:
     for index, item in enumerate(items):
         if int(item["id"]) == item_id:
@@ -206,19 +186,17 @@ def cmd_question(items_path: Path) -> int:
     chosen = select_next_item(items)
     item_id = int(chosen["id"])
 
-    print(f"topic: {chosen['topic']}  type: {chosen['type']}")
-    if chosen.get("question"):
-        print(f"hint: {chosen['question']}")
+    print(f"topic: {chosen['topic']}")
+    print(f"type: {chosen['type']}")
+    print(f"question: {chosen['question']}")
 
     try:
-        user_answer = input("answer> ").strip()
+        input("answer> ").strip()
     except EOFError:
-        user_answer = ""
+        pass
 
-    payload = build_payload(chosen, user_answer)
-    print(payload)
-    copy_to_clipboard(payload)
-    print("copied to clipboard")
+    print(f"correct answer: {chosen['answer']}")
+
     return item_id
 
 
@@ -241,12 +219,10 @@ def cmd_grade(
         item["next_due"] = int(item["next_due"]) + \
             schedule_interval_for_correct(new_streak)
         item["status"] = "learning" if new_streak == 1 else "review"
-        print("Correct")
     else:
         item["streak"] = 0
         item["status"] = "learning"
         item["next_due"] = int(item["next_due"]) + random.randint(3, 6)
-        print("Incorrect")
 
     save_items(items_path, items)
     return cmd_question(items_path)
@@ -343,9 +319,9 @@ def cmd_answer(items_path: Path, item_id: int) -> None:
 
 def print_help() -> None:
     print("Commands:")
-    print("  q      Select next item, enter answer, copy payload to clipboard")
-    print("  y      Mark active item correct, then auto-copy next item")
-    print("  n      Mark active item incorrect, then auto-copy next item")
+    print("  q      Select next item, enter answer")
+    print("  y      Mark active item correct")
+    print("  n      Mark active item incorrect")
     print("  a [ID] Print answer for item id (or active item in interactive mode)")
     print("  reset  Reset all items to unseen and due now")
     print("  check  Validate items and print summary stats")
