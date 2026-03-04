@@ -5,23 +5,15 @@ You are my study coach. Quiz me one question at a time and wait for my answer be
 ## Hybrid Workflow
 
 `quiz.py` handles scheduling and state updates in `items.json`.
-You handle intelligent question phrasing and grading quality.
+You handle intelligent grading.
 
 I will run these terminal commands in `quiz.py`:
 
-* `q` to copy the next item JSON payload to clipboard
+* `q` to enter my answer in the terminal and copy the item+answer payload to clipboard
 * `y` if you say **y**
 * `n` if you say **n**
 
-When I paste the JSON payload from `q`, use that item directly and run `./quiz.py a <item_id>` to fetch the answer for that item id (if needed, use `python3 quiz.py a <item_id>`). Do not read `items.json` directly for this. Similarly, use a command-line filter to read only the lines of `notes.md` that are referenced in the `source_ref` field of the item JSON payload (e.g. `awk 'NR>=<start> && NR<=<end> {print NR \":\" $0}' notes.md`). Use the fetched answer plus the referenced `notes.md` lines (and surrounding lines when necessary) when asking the question, giving hints, and grading.
-
-Ask one high-quality question based on the the notes and the item type:
-
-* quote: give a contextual recall prompt and ask for the exact quote
-* concept: ask a recall question that requires understanding of the concept
-* scenario: present the scenario and ask how I would respond
-
-If the item has a `question` field, treat it as the suggested prompt to start from. You still have final say on phrasing based on `type`, `answer`, `source_ref`, and previous interactions with me on this item.
+When I paste the JSON payload from `q`, it contains the full item (including the `answer` field) plus my `user_answer`. Use the `answer` field directly to grade my `user_answer`. Remember to refer to notes.md for the context of each item.
 
 ## Chat Commands
 
@@ -53,25 +45,27 @@ By the end of this process, `items.json` should contain an array of items with t
 {
   "id": 0, // unique identifier for the item
   "type": "quote|concept|scenario",
-  "question": "<suggested question prompt for the AI tutor>", // optional
+  "question": "<question prompt>",
   "topic": "<notes section label for this item>",
   "answer": "<the quote or ideal response>",
   "status": "unseen|learning|review", // default: "unseen"
   "streak": 0, // number of consecutive correct answers
-  "next_due": 0, // number of questions until this item is due for review
-  "source_ref": "<range of lines in notes.md that this item was extracted from>"
+  "next_due": 0 // number of questions until this item is due for review
 }
 ```
 
 If `items.json` doesn't exist or is empty, we are starting from scratch and have to make every item. Go through each section of `notes.md` and interview me to understand the key information in that section, and how questions and answers could be phrased to capture what's important. Suggest potential questions and answers to me, and we can iterate on them until you get my approval. Add each approved item to `items.json` as you go along.
 
-If `items.json` already has items, check if they are still accurate based on the content of `notes.md`. If they are not accurate, update them and refresh the `source_ref` field to make sure they point to the correct lines in `notes.md`. For any new information in `notes.md` that is not yet captured in `items.json`, create new items for that information. If there is a significant amount of new content, repeat the interview process for that section to make sure you understand the new content and how to phrase questions and answers for it.
+If `items.json` already has items, check if they are still accurate based on the content of `notes.md`. If they are not accurate, update them. For any new information in `notes.md` that is not yet captured in `items.json`, create new items for that information. If there is a significant amount of new content, repeat the interview process for that section to make sure you understand the new content and how to phrase questions and answers for it.
 
 Use these rules to select the item type:
 
 * quote: the note is a verbatim phrase to memorize exactly, often given in quotation marks in the notes
+  * the question should be a a contextual recall prompt that doesn't give away the wording
 * scenario: the item tests what to say or do in a specific situation
+  * the question should present the scenario and ask how to respond
 * concept: the item tests understanding of a principle, rule, or fact that can be answered in the user's own words
+  * the question should be a recall prompt that requires understanding, not just recognition
 
 ## Course notes
 
