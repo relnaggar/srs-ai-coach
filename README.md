@@ -1,6 +1,6 @@
-# SRS AI Coach
+# SRS AI CLI
 
-Simple spaced-repetition CLI for interacting with an AI coach. Extracts study items from `notes.md`, tracks progress in `items.json`, and prompts you to recall information. Designed for quick daily review sessions.
+Simple spaced-repetition CLI. Uses AI to extract study items from `notes.md`, tracks progress in `items.json`, and the CLI lets you quiz yourself. Designed for quick daily review sessions to reinforce learning over time.
 
 ## What This Project Does
 
